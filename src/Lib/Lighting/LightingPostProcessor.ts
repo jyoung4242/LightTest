@@ -1,4 +1,4 @@
-import { Sprite, ScreenShader, Engine } from "excalibur";
+import { Sprite, ScreenShader, Engine, Color } from "excalibur";
 import { Occluder, PointLight, AmbientLight } from "./LightingActors";
 import { shader } from "./LightingShader";
 
@@ -14,6 +14,14 @@ export class LightingPostProcessor implements ex.PostProcessor {
   public pointLights: PointLight[] = [];
   public ambientLights: AmbientLight[] = [];
   public occlusionMasks: Sprite[] = [];
+
+  qualityThreshold: number = 0;
+  volumetricDensity: number = 0;
+  volumetricScattering: number = 0;
+  volumetricSamples: number = 0;
+  volumetricColor: Color = new Color(0, 0, 0);
+
+  public _RayStepSize = 1.0;
 
   constructor(public graphicsContext: ex.ExcaliburGraphicsContextWebGL, public engine: Engine) {
     console.log(this);
@@ -106,14 +114,18 @@ export class LightingPostProcessor implements ex.PostProcessor {
       let occluderAngles: number[] = Array(50);
       let occluderTextureAssignments: number[] = Array(50);
       //debugger;
+
       for (let i = 0; i < this._numOccluders; i++) {
         occluderPositions[i * 2] = this.occluders[i].globalPos.x + -this.engine.currentScene.camera.viewport.left;
-        occluderPositions[i * 2 + 1] = this.occluders[i].globalPos.y + -this.engine.currentScene.camera.viewport.top;
+        occluderPositions[i * 2 + 1] =
+          this.engine.screen.height - this.occluders[i].globalPos.y + this.engine.currentScene.camera.viewport.top;
+        // this.engine.screen.height - this.pointLights[i].globalPos.y + this.engine.currentScene.camera.viewport.top;
         occluderSizes[i * 2] = this.occluders[i].width;
         occluderSizes[i * 2 + 1] = this.occluders[i].height;
         occluderAngles[i] = this.occluders[i].rotation;
         occluderTextureAssignments[i] = this.occluders[i].imageIndex;
       }
+      //console.log(occluderPositions);
 
       //pad the rest of each array to fill the size
       occluderPositions.fill(0.0, this._numOccluders * 2, 100 - this._numOccluders * 2);
@@ -125,7 +137,16 @@ export class LightingPostProcessor implements ex.PostProcessor {
       myShader.trySetUniformFloatArray("uOccluderPositions", occluderPositions);
       myShader.trySetUniformFloatArray("uOccluderSizes", occluderSizes);
       myShader.trySetUniformIntArray("uMyOcclusionTextureAssignments", occluderTextureAssignments);
+      myShader.trySetUniformFloatArray("uOccluderAngles", occluderAngles);
 
+      //raysteps
+      myShader.trySetUniformFloat("uRayStepSize", this._RayStepSize);
+    }
+  }
+
+  onDraw(): void {
+    let myShader = this._shader?.getShader();
+    if (myShader) {
       let myTexture = this.graphicsContext.textureLoader.load(this.occlusionMasks[0].image.image);
       myShader.setTexture(1, myTexture as WebGLTexture);
       myShader.trySetUniformInt("uOccluderMask0", 1);

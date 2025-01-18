@@ -27,12 +27,14 @@ let lsConfig: LightingSystemConfig = {
   postProcessor: myPP,
   lightingBufferSize: 20,
   engine: game,
+  rayStepSize: 0.5, // in pixels
 };
 let ls = new LightingSystem(lsConfig);
 game.currentScene.world.add(ls);
 
 game.graphicsContext.addPostProcessor(myPP);
 ls.loadOccluderMask(Resources.crateOcc.toSprite(), 0);
+ls.loadOccluderMask(Resources.roomOcc.toSprite(), 1);
 
 let room = new Room();
 game.add(room);

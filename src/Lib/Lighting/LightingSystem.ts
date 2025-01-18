@@ -1,4 +1,4 @@
-import { System, SystemType, Query, TransformComponent, Camera, Sprite, Engine, Screen, Actor } from "excalibur";
+import { System, SystemType, Query, TransformComponent, Camera, Sprite, Engine, Screen, Actor, Color } from "excalibur";
 import { PointLightComponent, AmbientLightComponent, OccluderComponent } from "./LigthingComponents";
 import { LightingPostProcessor } from "./LightingPostProcessor";
 import { LightingSystemConfig } from "./LightingTypesAndDefs";
@@ -19,6 +19,8 @@ export class LightingSystem extends System {
   private _bufferSize: number;
   private _occluderMasks: Array<Sprite> = [];
 
+  private _stepsSize: number = 1.0;
+
   constructor(config: LightingSystemConfig) {
     super();
     this.engine = config.engine;
@@ -31,7 +33,7 @@ export class LightingSystem extends System {
     this._pp = config.postProcessor;
     this._bufferSize = config.lightingBufferSize;
     for (let i = 0; i < 15; i++) this._occluderMasks.push(Resources.blank.toSprite());
-    console.log("system masks: ", this._occluderMasks);
+    this._stepsSize = config.rayStepSize;
   }
 
   loadOccluderMask(sprite: Sprite, occluderMaskSlotIndex: number) {
@@ -76,8 +78,9 @@ export class LightingSystem extends System {
     this._pp.pointLights = [...visiblePLs];
     this._pp.ambientLights = [...visibleALs];
     this._pp.occluders = [...visibleOcs];
+    this._pp._RayStepSize = this._stepsSize;
 
-    //console.log("system masks: ", this._occluderMasks);
+    //console.log("system masks: ", visibleOcs.length, visibleOcs);
 
     this._pp.occlusionMasks = [...(this._occluderMasks as Sprite[])];
   }

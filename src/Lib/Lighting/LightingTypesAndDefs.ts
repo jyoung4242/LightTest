@@ -31,4 +31,5 @@ export interface LightingSystemConfig {
   lightingBufferSize: number; // # of pixels buffer around the screen to render lights into, even if just off camera
   postProcessor: LightingPostProcessor;
   engine: Engine;
+  rayStepSize: number;
 }
