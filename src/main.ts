@@ -27,7 +27,7 @@ let lsConfig: LightingSystemConfig = {
   postProcessor: myPP,
   lightingBufferSize: 20,
   engine: game,
-  rayStepSize: 0.5, // in pixels
+  rayStepSize: 1.0, // in pixels
 };
 let ls = new LightingSystem(lsConfig);
 game.currentScene.world.add(ls);
@@ -41,4 +41,4 @@ game.add(room);
 room.addCrate();
 //room.addCrate();
 room.addLamp();
-//room.addLamp();
+room.addLamp();

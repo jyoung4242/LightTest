@@ -7,6 +7,7 @@ const LampColor = Color.fromHex("#d1cf9f");
 export class Lamp extends Actor {
   pLight: PointLight;
   isClicked: boolean = false;
+  clickThrottle: number = 0;
   owner: Actor;
 
   constructor(scale: Vector, pos: Vector, parent: Actor) {
@@ -32,19 +33,24 @@ export class Lamp extends Actor {
 
   onInitialize(engine: Engine): void {
     this.graphics.use(Resources.lamp.toSprite());
-    engine.input.pointers.primary.on("down", () => {
+    this.on("pointerdown", () => {
       this.isClicked = true;
     });
-    engine.input.pointers.primary.on("up", () => {
+
+    this.on("pointerup", () => {
       this.isClicked = false;
     });
   }
 
   onPreUpdate(engine: Engine, elapsed: number): void {
     if (this.isClicked) {
-      //get pointer position
-      const pointerPos = engine.input.pointers.primary.lastWorldPos;
-      this.pos = pointerPos.sub(this.owner.pos);
+      this.clickThrottle++;
+
+      if (this.clickThrottle > 10) {
+        //get pointer position
+        const pointerPos = engine.input.pointers.primary.lastWorldPos;
+        this.pos = pointerPos.sub(this.owner.pos);
+      }
     }
   }
 }

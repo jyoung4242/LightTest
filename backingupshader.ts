@@ -40,9 +40,9 @@ uniform sampler2D uOccluderMask13;
 uniform sampler2D uOccluderMask14;
 
 // Occlusion Shader Uniforms
-uniform float uOccluderPosition[100];
-uniform float uOccluderSize[100];
-uniform float uOccluderAngle[50];
+uniform float uOccluderPositions[100];
+uniform float uOccluderSizes[100];
+uniform float uOccluderAngles[50];
 uniform int uOccluderCount;
 uniform int uMyOcclusionTextureAssignments[50];
 
@@ -167,9 +167,9 @@ void main() {
         // Calculate shadows from all occluders for this light
         for(int j = 0; j < uOccluderCount; j++) {
             Occluder occluder;
-            occluder.position = convertFlat2Vec2(uOccluderPosition, j);
-            occluder.size = convertFlat2Vec2(uOccluderSize, j);
-            occluder.rotation = uOccluderAngle[j];
+            occluder.position = convertFlat2Vec2(uOccluderPositions, j);
+            occluder.size = convertFlat2Vec2(uOccluderSizes, j);
+            occluder.rotation = uOccluderAngles[j];
             
             
             float shadow = calculateShadow(pixelCoord, light.position, occluder, j);

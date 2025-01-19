@@ -39,7 +39,7 @@ export class LightingSystem extends System {
   loadOccluderMask(sprite: Sprite, occluderMaskSlotIndex: number) {
     if (occluderMaskSlotIndex < 0 || occluderMaskSlotIndex > 14) throw new Error("Only 15 Occluder mask slots available");
     this._occluderMasks[occluderMaskSlotIndex] = sprite;
-    console.log("system masks: ", this._occluderMasks);
+    this._pp.setOcclusionMaskDirtyFlag();
   }
 
   isLightVisible(entity: PointLight | AmbientLight | Occluder): boolean {

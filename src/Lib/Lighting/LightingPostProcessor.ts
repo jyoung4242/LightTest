@@ -14,6 +14,7 @@ export class LightingPostProcessor implements ex.PostProcessor {
   public pointLights: PointLight[] = [];
   public ambientLights: AmbientLight[] = [];
   public occlusionMasks: Sprite[] = [];
+  private _masksDirtyFlag: boolean = false;
 
   qualityThreshold: number = 0;
   volumetricDensity: number = 0;
@@ -113,19 +114,17 @@ export class LightingPostProcessor implements ex.PostProcessor {
       let occluderSizes: number[] = Array(100);
       let occluderAngles: number[] = Array(50);
       let occluderTextureAssignments: number[] = Array(50);
-      //debugger;
 
       for (let i = 0; i < this._numOccluders; i++) {
         occluderPositions[i * 2] = this.occluders[i].globalPos.x + -this.engine.currentScene.camera.viewport.left;
         occluderPositions[i * 2 + 1] =
           this.engine.screen.height - this.occluders[i].globalPos.y + this.engine.currentScene.camera.viewport.top;
-        // this.engine.screen.height - this.pointLights[i].globalPos.y + this.engine.currentScene.camera.viewport.top;
+
         occluderSizes[i * 2] = this.occluders[i].width;
         occluderSizes[i * 2 + 1] = this.occluders[i].height;
         occluderAngles[i] = this.occluders[i].rotation;
         occluderTextureAssignments[i] = this.occluders[i].imageIndex;
       }
-      //console.log(occluderPositions);
 
       //pad the rest of each array to fill the size
       occluderPositions.fill(0.0, this._numOccluders * 2, 100 - this._numOccluders * 2);
@@ -144,9 +143,16 @@ export class LightingPostProcessor implements ex.PostProcessor {
     }
   }
 
+  setOcclusionMaskDirtyFlag(): void {
+    this._masksDirtyFlag = true;
+  }
+
   onDraw(): void {
     let myShader = this._shader?.getShader();
-    if (myShader) {
+    if (myShader && this._masksDirtyFlag) {
+      console.log("mask dirty");
+      console.log(this.occlusionMasks);
+
       let myTexture = this.graphicsContext.textureLoader.load(this.occlusionMasks[0].image.image);
       myShader.setTexture(1, myTexture as WebGLTexture);
       myShader.trySetUniformInt("uOccluderMask0", 1);
@@ -206,6 +212,7 @@ export class LightingPostProcessor implements ex.PostProcessor {
       myTexture = this.graphicsContext.textureLoader.load(this.occlusionMasks[14].image.image);
       myShader.setTexture(15, myTexture as WebGLTexture);
       myShader.trySetUniformInt("uOccluderMask14", 15);
+      this._masksDirtyFlag = false;
     }
   }
 }

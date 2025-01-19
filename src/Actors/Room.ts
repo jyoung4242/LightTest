@@ -20,7 +20,12 @@ export class Room extends Actor {
       anchor: Vector.Zero,
     });
 
-    let oCconfig: OccluderActorArgs = { pos: new Vector(0, 461), width: 736, height: 461, imageIndex: 1 };
+    let oCconfig: OccluderActorArgs = {
+      pos: new Vector(0, 461),
+      width: 736,
+      height: 461,
+      imageIndex: 1,
+    };
     this.occ = new Occluder(oCconfig);
 
     this.addChild(this.occ);

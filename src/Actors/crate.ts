@@ -30,6 +30,7 @@ export class Crate extends Actor {
       imageIndex: 0,
       rotation: this.rotation,
     });
+
     this.addChild(this.occ);
     this.addChild(this.pl);
   }
