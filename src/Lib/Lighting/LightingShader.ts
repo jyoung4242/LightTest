@@ -99,13 +99,16 @@ float calculateShadow(vec2 point, vec2 lightPos, Occluder occluder, int samplerI
 
         // Calculate normalized position in occluder's local space
         vec2 normalizedPos = rotatedRelativePos / occluder.size;
-
-        //vec2 normalizedPos = relativePos / occluder.size; <--old code
+        // this inverses the y axis, Excalibur 0,0 is topleft and GLSL is bottomleft
         vec2 flippedUv = vec2(normalizedPos.x, 1.0 - normalizedPos.y);
         
+        
+        //if (normalizedPos.x >= 0.0 && normalizedPos.x <= 1.0 && 
+        //normalizedPos.y >= 0.0 && normalizedPos.y <= 1.0) {
+        
         // If we're inside the occluder bounds
-        if (normalizedPos.x >= 0.0 && normalizedPos.x <= 1.0 && 
-            normalizedPos.y >= 0.0 && normalizedPos.y <= 1.0) {
+        if (flippedUv.x >= 0.0 && flippedUv.x <= 1.0 && 
+            flippedUv.y >= 0.0 && flippedUv.y <= 1.0) {
             
             vec4 occlusionSample;
             
@@ -126,7 +129,7 @@ float calculateShadow(vec2 point, vec2 lightPos, Occluder occluder, int samplerI
             else if(maskIndex == 14) {occlusionSample = texture(uOccluderMask14, flippedUv);}
             
             // If we hit an occluder, cast shadow along the remaining ray
-            if (occlusionSample.r < 0.5) {
+            if (occlusionSample.r < 0.25) {
                 shadow = 0.0;
                 break;
             }
@@ -163,15 +166,12 @@ void main() {
         light.color = convertFlat2Vec3(uPointLightColors, i);
         
         float  combinedShadow = 1.0;
-        
         // Calculate shadows from all occluders for this light
         for(int j = 0; j < uOccluderCount; j++) {
             Occluder occluder;
             occluder.position = convertFlat2Vec2(uOccluderPositions, j);
             occluder.size = convertFlat2Vec2(uOccluderSizes, j);
-            occluder.rotation = uOccluderAngles[j];
-            
-            
+            occluder.rotation = -uOccluderAngles[j];  // invert radian angle to match Excalibur rotation to GLSL rotation
             float shadow = calculateShadow(pixelCoord, light.position, occluder, j);
             combinedShadow *= shadow; // Multiply shadows together for overlapping occluders
         }
@@ -180,7 +180,6 @@ void main() {
         float distance = length(pixelCoord - light.position);
         float falloff = 1.0 / (1.0 + distance * light.falloff);
         vec3 pointLightContribution = light.color * falloff * combinedShadow * light.intensity;
-        
         totalLight += pointLightContribution;
     }
 
@@ -190,7 +189,6 @@ void main() {
         ambient.position = convertFlat2Vec2(uAmbientLightPositions, i);
         ambient.color = convertFlat2Vec3(uAmbientLightColors, i);
         ambient.intensity = uAmbientLightIntensities[i];
-        
         // Simple ambient contribution - could be modified to have falloff or other effects
         totalLight += ambient.color * ambient.intensity;
     }

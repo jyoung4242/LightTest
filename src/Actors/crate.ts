@@ -10,7 +10,7 @@ export class Crate extends Actor {
       pos,
       width: 29,
       height: 36,
-      rotation: toRadians(0),
+      rotation: toRadians(30),
       z: 1,
       anchor: Vector.Zero,
     });
